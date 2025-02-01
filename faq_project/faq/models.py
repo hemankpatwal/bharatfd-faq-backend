@@ -62,19 +62,4 @@ class FAQ(models.Model):
         """Get the answer in the specified language"""
         return self.get_translated_text('answer', language_code)
 
-    def clear_cache(self):
-        """Clear all cached translations for this FAQ"""
-        languages = ['en', 'hi', 'bn']
-        fields = ['question', 'answer']
-        
-        for lang in languages:
-            for field in fields:
-                cache_key = f'faq_{self.id}_{field}_{lang}'
-                cache.delete(cache_key)
-
-    def save(self, *args, **kwargs):
-        """Override save to clear cache when FAQ is updated"""
-        # Clear cache before saving
-        if self.pk:
-            self.clear_cache()
-        super().save(*args, **kwargs)
+    

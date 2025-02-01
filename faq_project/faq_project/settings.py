@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/5.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
-
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -35,12 +35,43 @@ INSTALLED_APPS = [
     'django.contrib.auth',
     'rest_framework',
     'ckeditor',
+    'ckeditor_uploader',
     'faq',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
 ]
+
+CKEDITOR_CONFIGS = {
+    'default': {
+        'toolbar': 'Custom',
+        'width': '100%',
+        'toolbar_Custom': [
+            ['Bold', 'Italic', 'Underline'],
+            ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock'],
+            ['Link', 'Unlink'],
+            ['RemoveFormat', 'Source'],
+            ['Format', 'Font', 'FontSize'],
+            ['TextColor', 'BGColor'],
+            ['Table', 'HorizontalRule'],
+            ['Image', 'Upload', 'Flash'],
+        ],
+        'language': 'en',  # Default language
+        'languages': [
+            {'code': 'en', 'name': 'English'},
+            {'code': 'hi', 'name': 'Hindi'},
+            {'code': 'bn', 'name': 'Bengali'},
+        ],
+        'removePlugins': ','.join([
+            'elementspath',
+            'exportpdf',
+        ]),
+        'extraPlugins': ','.join([
+            'codesnippet', 
+        ]),
+    }
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -127,3 +158,18 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+CKEDITOR_UPLOAD_PATH = "uploads/"
+CKEDITOR_RESTRICT_BY_USER = True
+CKEDITOR_BROWSE_SHOW_DIRS = True
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': 'redis://127.0.0.1:6379/1',  # Adjust as needed
+    }
+}
