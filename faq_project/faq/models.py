@@ -140,4 +140,6 @@ class FAQ(models.Model):
         """
         if not self.pk:  # Only auto-translate for new FAQs
             self.auto_translate()
+        elif self.pk:
+            self.clear_cache()
         super().save(*args, **kwargs)
