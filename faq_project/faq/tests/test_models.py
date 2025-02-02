@@ -2,6 +2,7 @@ import pytest
 from faq.models import FAQ
 from django.core.cache import cache
 
+
 @pytest.mark.django_db
 def test_faq_creation():
     """Test that an FAQ instance can be created successfully."""
@@ -11,6 +12,7 @@ def test_faq_creation():
     )
     assert faq.id is not None
     assert faq.question == "What is Django?"
+
 
 @pytest.mark.django_db
 def test_faq_auto_translation():
@@ -25,6 +27,7 @@ def test_faq_auto_translation():
     assert faq.answer_hi is not None
     assert faq.question_bn is not None
     assert faq.answer_bn is not None
+
 
 @pytest.mark.django_db
 def test_faq_translation_fallback():
@@ -41,6 +44,7 @@ def test_faq_translation_fallback():
     # Hindi is missing, so it should return English
     assert faq.get_question("hi") == "Fallback test?"
 
+
 @pytest.mark.django_db
 def test_faq_caching():
     """Test that FAQ translations are cached properly."""
@@ -56,6 +60,7 @@ def test_faq_caching():
     # Fetch from cache and check
     cached_value = cache.get(cache_key)
     assert cached_value == "Cached translation"
+
 
 @pytest.mark.django_db
 def test_faq_cache_clear():

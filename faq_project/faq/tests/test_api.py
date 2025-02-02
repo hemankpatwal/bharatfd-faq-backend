@@ -4,6 +4,7 @@ from rest_framework import status
 from rest_framework.test import APIClient
 from faq.models import FAQ
 
+
 @pytest.mark.django_db
 class TestFAQAPI:
     def setup_method(self):

@@ -7,25 +7,29 @@ from deep_translator import GoogleTranslator
 
 CACHE_TTL = 3600  # 1 hour
 
+
 class FAQ(models.Model):
     # Base fields (English)
     question = models.TextField(_('Question (English)'))
     answer = RichTextField(_('Answer (English)'))
-    
+
     # Hindi translations
-    question_hi = models.TextField(_('Question (Hindi)'), blank=True, null=True)
+    question_hi = models.TextField(
+        _('Question (Hindi)'), blank=True, null=True)
     answer_hi = RichTextField(_('Answer (Hindi)'), blank=True, null=True)
-    
+
     # Bengali translations
-    question_bn = models.TextField(_('Question (Bengali)'), blank=True, null=True)
+    question_bn = models.TextField(
+        _('Question (Bengali)'), blank=True, null=True)
     answer_bn = RichTextField(_('Answer (Bengali)'), blank=True, null=True)
-    
+
     # Metadata
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     is_active = models.BooleanField(default=True)
-    order = models.IntegerField(default=0, help_text=_('Display order of the FAQ'))
-    
+    order = models.IntegerField(
+        default=0, help_text=_('Display order of the FAQ'))
+
     class Meta:
         verbose_name = _('FAQ')
         verbose_name_plural = _('FAQs')
@@ -42,24 +46,26 @@ class FAQ(models.Model):
         if not self.pk:
             translated_field = f'{field_name}_{language_code}'
             translated_content = getattr(self, translated_field, None)
-            return translated_content if translated_content else getattr(self, field_name)
+            return translated_content if translated_content else getattr(
+                self, field_name)
 
         cache_key = f'faq_{self.id}_{field_name}_{language_code}'
         cached_value = cache.get(cache_key)
-        
+
         if cached_value:
             return cached_value
 
         # Get the translated field if it exists
         translated_field = f'{field_name}_{language_code}'
         translated_content = getattr(self, translated_field, None)
-        
+
         # Fallback to English if translation is not available
-        content = translated_content if translated_content else getattr(self, field_name)
-        
+        content = translated_content if translated_content else getattr(
+            self, field_name)
+
         # Cache the result for future requests
         cache.set(cache_key, content, timeout=CACHE_TTL)  # Cache for 1 hour
-        
+
         return content
 
     def get_question(self, language_code):
@@ -77,7 +83,7 @@ class FAQ(models.Model):
 
         languages = ['en', 'hi', 'bn']
         fields = ['question', 'answer']
-        
+
         for lang in languages:
             for field in fields:
                 cache_key = f'faq_{self.id}_{field}_{lang}'
@@ -105,14 +111,20 @@ class FAQ(models.Model):
         }
 
         for language_code, fields in languages.items():
-            if not getattr(self, fields['question']) or not getattr(self, fields['answer']):
+            if not getattr(
+                    self,
+                    fields['question']) or not getattr(
+                    self,
+                    fields['answer']):
                 # Translate question
-                translated_question = self.translate_text(self.question, language_code)
+                translated_question = self.translate_text(
+                    self.question, language_code)
                 if translated_question:
                     setattr(self, fields['question'], translated_question)
 
                 # Translate answer
-                translated_answer = self.translate_text(self.answer, language_code)
+                translated_answer = self.translate_text(
+                    self.answer, language_code)
                 if translated_answer:
                     setattr(self, fields['answer'], translated_answer)
 
@@ -122,15 +134,18 @@ class FAQ(models.Model):
         """
         # For new instances or when specific fields are updated
         update_fields = kwargs.get('update_fields', [])
-        needs_translation = (not self.pk) or ('question' in update_fields) or ('answer' in update_fields)
-        
+        needs_translation = (
+            not self.pk) or (
+            'question' in update_fields) or (
+            'answer' in update_fields)
+
         if needs_translation:
             self.auto_translate()
-            
+
         # Clear cache for existing instances
         if self.pk:
             self.clear_cache()
-            
+
         super().save(*args, **kwargs)
 
     def delete(self, *args, **kwargs):

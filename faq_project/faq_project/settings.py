@@ -50,7 +50,8 @@ CKEDITOR_CONFIGS = {
         'width': '100%',
         'toolbar_Custom': [
             ['Bold', 'Italic', 'Underline'],
-            ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock'],
+            ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-',
+                'JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock'],
             ['Link', 'Unlink'],
             ['RemoveFormat', 'Source'],
             ['Format', 'Font', 'FontSize'],
@@ -69,7 +70,7 @@ CKEDITOR_CONFIGS = {
             'exportpdf',
         ]),
         'extraPlugins': ','.join([
-            'codesnippet', 
+            'codesnippet',
         ]),
     }
 }

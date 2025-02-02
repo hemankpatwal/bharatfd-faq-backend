@@ -1,6 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import FAQViewSet, faq_preview 
+from .views import FAQViewSet, faq_preview
 
 router = DefaultRouter()
 router.register(r'faqs', FAQViewSet, basename='faq')
