@@ -3,7 +3,8 @@ from .models import FAQ
 from ckeditor.widgets import CKEditorWidget
 from django import forms
 from django.utils.translation import gettext_lazy as _
-
+from django.utils.html import format_html
+from django.urls import reverse
 
 class FAQForm(forms.ModelForm):
     class Meta:
@@ -37,3 +38,10 @@ class FAQAdmin(admin.ModelAdmin):
         }),
     )
     ordering = ('order', '-created_at')
+
+    def preview_link(self, obj):
+        return format_html('<a href="{}" target="_blank">Preview</a>', reverse('faq-preview', args=[obj.id]))
+    preview_link.short_description = 'Preview'
+    preview_link.allow_tags = True
+
+    list_display = ('question', 'is_active', 'order', 'created_at', 'preview_link')

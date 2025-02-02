@@ -1,5 +1,6 @@
 from rest_framework import viewsets
 from .models import FAQ
+from django.shortcuts import render, get_object_or_404
 from .serializers import FAQSerializer
 from django.utils.translation import get_language
 from django_filters import rest_framework as filters
@@ -35,3 +36,8 @@ class FAQViewSet(viewsets.ModelViewSet):
             faq.question = faq.get_question(lang)
             faq.answer = faq.get_answer(lang)
         return queryset
+
+
+def faq_preview(request, pk):
+    faq = get_object_or_404(FAQ, pk=pk)
+    return render(request, 'faq/faq_preview.html', {'faq': faq})
