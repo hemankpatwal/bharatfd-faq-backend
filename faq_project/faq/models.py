@@ -39,6 +39,11 @@ class FAQ(models.Model):
         Get the translated version of a field based on language code.
         Falls back to English if translation is not available.
         """
+        if not self.pk:
+            translated_field = f'{field_name}_{language_code}'
+            translated_content = getattr(self, translated_field, None)
+            return translated_content if translated_content else getattr(self, field_name)
+
         cache_key = f'faq_{self.id}_{field_name}_{language_code}'
         cached_value = cache.get(cache_key)
         
@@ -67,6 +72,9 @@ class FAQ(models.Model):
 
     def clear_cache(self):
         """Clear all cached translations for this FAQ"""
+        if not self.pk:
+            return
+
         languages = ['en', 'hi', 'bn']
         fields = ['question', 'answer']
         
@@ -74,33 +82,6 @@ class FAQ(models.Model):
             for field in fields:
                 cache_key = f'faq_{self.id}_{field}_{lang}'
                 cache.delete(cache_key)
-
-    def save(self, *args, **kwargs):
-        """Override save to translate fields and clear cache when FAQ is updated"""
-        # Translate only if the question or answer is updated
-        if not self.pk or 'question' in kwargs.get('update_fields', []) or 'answer' in kwargs.get('update_fields', []):
-            translator = GoogleTranslator(source='en', target='hi')
-
-            # Translate to Hindi
-            self.question_hi = translator.translate(self.question, dest='hi').text
-            self.answer_hi = translator.translate(self.answer, dest='hi').text
-
-            # Translate to Bengali
-            self.question_bn = translator.translate(self.question, dest='bn').text
-            self.answer_bn = translator.translate(self.answer, dest='bn').text
-
-        # Clear cache before saving
-        if self.pk:
-            self.clear_cache()
-
-        super().save(*args, **kwargs)
-
-    def delete(self, *args, **kwargs):
-        """
-        Override delete to clear cache when FAQ is deleted.
-        """
-        self.clear_cache()
-        super().delete(*args, **kwargs)
 
     def translate_text(self, text, dest_language):
         """
@@ -123,23 +104,38 @@ class FAQ(models.Model):
             # Add more languages here
         }
 
-        for lang_code, fields in languages.items():
-            # Translate question
-            translated_question = self.translate_text(self.question, lang_code)
-            if translated_question:
-                setattr(self, fields['question'], translated_question)
+        for language_code, fields in languages.items():
+            if not getattr(self, fields['question']) or not getattr(self, fields['answer']):
+                # Translate question
+                translated_question = self.translate_text(self.question, language_code)
+                if translated_question:
+                    setattr(self, fields['question'], translated_question)
 
-            # Translate answer
-            translated_answer = self.translate_text(self.answer, lang_code)
-            if translated_answer:
-                setattr(self, fields['answer'], translated_answer)
+                # Translate answer
+                translated_answer = self.translate_text(self.answer, language_code)
+                if translated_answer:
+                    setattr(self, fields['answer'], translated_answer)
 
     def save(self, *args, **kwargs):
         """
         Override save to auto-translate FAQs before saving.
         """
-        if not self.pk:  # Only auto-translate for new FAQs
+        # For new instances or when specific fields are updated
+        update_fields = kwargs.get('update_fields', [])
+        needs_translation = (not self.pk) or ('question' in update_fields) or ('answer' in update_fields)
+        
+        if needs_translation:
             self.auto_translate()
-        elif self.pk:
+            
+        # Clear cache for existing instances
+        if self.pk:
             self.clear_cache()
+            
         super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        """
+        Override delete to clear cache when FAQ is deleted.
+        """
+        super().delete(*args, **kwargs)
+        self.clear_cache()

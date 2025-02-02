@@ -8,4 +8,5 @@ router.register(r'faqs', FAQViewSet, basename='faq')
 urlpatterns = [
     path('', include(router.urls)),
     path('preview/<int:pk>/', faq_preview, name='faq-preview'),
+    path('api/', include(router.urls)),
 ]
