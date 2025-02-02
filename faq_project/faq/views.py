@@ -3,6 +3,8 @@ from .models import FAQ
 from .serializers import FAQSerializer
 from django.utils.translation import get_language
 from django_filters import rest_framework as filters
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
 
 class FAQFilter(filters.FilterSet):
     class Meta:
@@ -12,14 +14,21 @@ class FAQFilter(filters.FilterSet):
 class FAQViewSet(viewsets.ModelViewSet):
     queryset = FAQ.objects.filter(is_active=True).order_by('order')
     serializer_class = FAQSerializer
-    # filterset_class = FAQFilter
+
+    @method_decorator(cache_page(60 * 15))  # Cache API responses for 15 minutes
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+
+    @method_decorator(cache_page(60 * 15))  # Cache API responses for 15 minutes
+    def retrieve(self, request, *args, **kwargs):
+        return super().retrieve(request, *args, **kwargs)
 
     def get_queryset(self):
         """
         Override the queryset to support language selection via ?lang= parameter.
         """
         queryset = super().get_queryset()
-        lang = self.request.query_params.get('lang', get_language())
+        lang = self.request.query_params.get('lang', 'en')
 
         # Annotate the queryset with translated fields
         for faq in queryset:
